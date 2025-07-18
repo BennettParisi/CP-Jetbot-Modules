@@ -42,3 +42,28 @@ BOUNDARY_THRESH = .5                   # smaller value means a broader search ar
 # HORIZON = 80.1                         # horizon in image pixel. NEEDS TO HAVE A DECIMAL PLACE TO AVOID DIVISION BY 0 (80 => 80.1)
 HORIZON = 40.5
 FILTER_STRENGTH = 1                    # number of frames where lane is smoothed with moving average
+
+import cv2, numpy as np
+
+def crop_image(image_capture):
+    height, width = image_capture.shape[:2]
+
+    # Create a full-white mask (same size as image)
+    mask = np.ones_like(image_capture, dtype=np.uint8) * 255
+
+    # Define triangle points
+    triangle_height = height // 3  # adjust as needed
+    triangle_width = width
+
+    # Top-left triangle
+    pts_left = np.array([[0, 0], [0, triangle_height], [triangle_width, 0]], np.int32)
+    cv2.fillPoly(mask, [pts_left], color=(0, 0, 0))
+
+    # Top-right triangle
+    pts_right = np.array([[width, 0], [width - triangle_width, 0], [width, triangle_height]], np.int32)
+    cv2.fillPoly(mask, [pts_right], color=(0, 0, 0))
+
+    # Apply the mask: wherever the mask is black, image becomes black
+    cropped = cv2.bitwise_and(image_capture, mask)
+    
+    return cropped
